@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # Servicio 1: Base de datos PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: leonardo-db
+    environment:
+      POSTGRES_USER: leonardo_user
+      POSTGRES_PASSWORD: mi_password_seguro
+      POSTGRES_DB: leonardo_db
+    volumes:
+      - pgdata_val:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - red-leonardo
+
+  # Servicio 2: Tu aplicación web Flask
+  web:
+    build: .
+    container_name: leonardo-web-v2
+    ports:
+      - "5094:5000" # Usamos un puerto libre diferente al anterior (ej. 5094)
+    environment:
+      - DATABASE_URL=postgresql://leonardo_user:mi_password_seguro@db:5432/leonardo_db
+    restart: unless-stopped
+    depends_on:
+      - db
+    networks:
+      - red-leonardo
+
+volumes:
+  pgdata_val:
+
+networks:
+  red-leonardo:
+    driver: bridge
